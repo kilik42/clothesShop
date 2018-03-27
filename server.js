@@ -33,11 +33,46 @@ app.get('/product', function(request, response){
         response.stauts(500).send({error: "could not fetch products"});
 
       }else{
-        
+
         response.send(products);
       }
     });
 });
+
+app.get('/wishlist', function(request, response){
+    WishList.find({}, function(err, wishList){
+      response.send(wishLists);
+    })  ;
+});
+
+app.post('/wishlist', function(request, response){
+  var wishList = new WishList();
+  wishList.title = request.body.title;
+
+  wishList.save(function(err, newWishList){
+    if (err){
+      response.status(500).send({error: "could not create wish list"});
+    }else{
+      response.send(newWishList);
+    }
+  });
+});
+
+app.put('wishlist/product/add', function(requet, response){
+  Product.findOne({_id: request.body.productId}, function(err, product){
+    if(err){
+      response.status(500).send({error: "could not add item to wishlist"});
+    }else{
+      WishList.update({_id:request.body.wishListId}, {$addToSet:
+      {products: product._id}}, function(err, wishList){
+        
+      });
+    }
+  })
+});
+
+
+
 app.listen(3000, function(){
   console.log("swag shop api running on port 3000....");
 });
